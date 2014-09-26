@@ -20,12 +20,14 @@
 //
 //CURTAIN
 //
-//Forsooth here doth we instantiate thy youtube player api 
+(function ($) {
+//Forsooth here doth we instantiate thy youtube player api
 //as it was written by the Google
 var tag = document.createElement('script');
 tag.src = "//www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
 //Then as a drop of rain we create two heavenly arrays
 //who may hold in thy endless bossom our value
 //necessary they may be not, but what is love
@@ -215,6 +217,22 @@ $(window).load(function() {
 function onPlayerReady(event) {
 	//event.target.playVideo();
 }
+
+// <noShakespeare>
+// Abstraction for the actual tracking call to allow the
+// implementaion to dynamically chose between the classic
+// and universal analytics implementation. This could also
+// be made configurable and allow of a non-default (not 't0')
+// universal analytics tracker.
+// </noShakespeare>
+function trackEvent (category, action, label) {
+	if (typeof window.ga === 'function') {
+		ga('send', 'event', category, action, label);
+	} else {
+		_gaq.push(['_trackEvent', category, action, label]);
+	}
+}
+
 //And lo did Chris Green say
 //upon the blog comments
 //http://www.lunametrics.com/blog/2012/10/22/automatically-track-youtube-videos-events-google-analytics/
@@ -265,24 +283,21 @@ function onPlayerStateChange(event) {
 			}
 			//Should the video rear it's head
             if (event.data == YT.PlayerState.PLAYING) {
-				_gaq.push(['_trackEvent', 'Videos', 'Play', thisVideoTitle]); 
-        	    //ga('send', 'event', 'Videos', 'Play', thisVideoTitle);
+            	trackEvent('Videos', 'Play', thisVideoTitle);
 				//thy video plays
 				//reaffirm the pausal beast is not with us
         		pauseFlagArray[j] = false;
-        	} 
+        	}
 			//should the video tire out and cease
         	if (event.data == YT.PlayerState.ENDED){
-				_gaq.push(['_trackEvent', 'Videos', 'Watch to End', thisVideoTitle]); 
-        		//ga('send', 'event', 'Videos', 'Watch to End', thisVideoTitle);
-        	} 
+        		trackEvent('Videos', 'Watch to End', thisVideoTitle);
+        	}
 			//and should we tell it to halt, cease, heal.
 			//confirm the pause has but one head and it flies not its flag
 			//lo the pause event will spawn a many headed monster
 			//with events overflowing
         	if (event.data == YT.PlayerState.PAUSED && pauseFlagArray[j] != true){
-				_gaq.push(['_trackEvent', 'Videos', 'Pause', thisVideoTitle]); 
-        		//ga('send', 'event', 'Videos', 'Pause', thisVideoTitle);
+        		trackEvent('Videos', 'Pause', thisVideoTitle);
 				//tell the monster it may have
 				//but one head
         		pauseFlagArray[j] = true;
@@ -290,17 +305,17 @@ function onPlayerStateChange(event) {
 			//and should the monster think, before it doth play
 			//after we command it to move
         	if (event.data == YT.PlayerState.BUFFERING){
-				_gaq.push(['_trackEvent', 'Videos', 'Buffering', thisVideoTitle]); 
-        		//ga('send', 'event', 'Videos', 'Buffering', thisVideoTitle);
+        		trackEvent('Videos', 'Buffering', thisVideoTitle);
         	}
 			//and should it cue
 			//for why not track this as well.
         	if (event.data == YT.PlayerState.CUED){
-				_gaq.push(['_trackEvent', 'Videos', 'Cueing', thisVideoTitle]); 
-        		//ga('send', 'event', 'Videos', 'Cueing', thisVideoTitle);
+        		trackEvent('Videos', 'Cueing', thisVideoTitle);
         	}
 
 	    }
 	}
-} 
+}
+
+})(jQuery);
 //fin
