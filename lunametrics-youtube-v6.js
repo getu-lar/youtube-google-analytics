@@ -56,6 +56,28 @@ var showTitle = 3;
 //and reload the frames
 //which oft works
 var reloadFrames = 0;
+//And lo did Chris Green say
+//upon the blog comments
+//http://www.lunametrics.com/blog/2012/10/22/automatically-track-youtube-videos-events-google-analytics/
+//Why not a pause flag
+//one to prevent the terrors of the spammy
+//pause events when a visitor
+//doth drag the slide bar
+//cross't thy player
+//and all said huzzah
+//let us start by setting his flag to false
+//so that we know it is not true
+var pauseFlagArray = new Array();
+
+var settings = {
+	videoArray: videoArray,
+	playerArray: playerArray,
+	videoTitle: videoTitle,
+	showTitle: showTitle,
+	reloadFrames: reloadFrames,
+	pauseFlagArray: pauseFlagArray,
+};
+
 //
 //And Then Lo We Tracked The Frames
 //with hounds ere the dark of knight
@@ -80,7 +102,7 @@ function trackYouTube()
 			//but if your tracking seems to suffer
 			//adjust they variable above
 			//and refresh the frames upon loading
-			if(reloadFrames){
+			if(settings.reloadFrames){
 				//next some trickery
 				//has it the foul stench of the demon parameter
 				var regex1 = /(?:https?:)?\/\/www\.youtube\.com\/embed\/([\w-]{11})(\?)?/;
@@ -169,7 +191,7 @@ function trackYouTube()
 //rather than the gibberish jumble
 //as provided to by the wizard Alex Moore
 function getRealTitles(j) {
-	if(showTitle==2){
+	if(settings.showTitle==2){
 		playerArray[j] = new YT.Player(videoArray[j], {
 			videoId: videoArray[j],
 			events: {
@@ -233,18 +255,6 @@ function trackEvent (category, action, label) {
 	}
 }
 
-//And lo did Chris Green say
-//upon the blog comments
-//http://www.lunametrics.com/blog/2012/10/22/automatically-track-youtube-videos-events-google-analytics/
-//Why not a pause flag
-//one to prevent the terrors of the spammy
-//pause events when a visitor
-//doth drag the slide bar
-//cross't thy player
-//and all said huzzah
-//let us start by setting his flag to false
-//so that we know it is not true
-var pauseFlagArray = new Array();
 //When our caged monster wishes to act
 //we are ready to hold it's chains
 //and enslave it to our will.
@@ -273,9 +283,9 @@ function onPlayerStateChange(event) {
 			console.log(thisVideoTitle);
 			//should we have a title, alas naught else
 			if(thisVideoTitle.length>0){
-				if(showTitle==3){
+				if(settings.showTitle==3){
 					thisVideoTitle = thisVideoTitle + " | " + videoID;
-				}else if(showTitle==2){
+				}else if(settings.showTitle==2){
 					thisVideoTitle = videoID;
 				}
 			}else{
@@ -316,6 +326,12 @@ function onPlayerStateChange(event) {
 		}
 	}
 }
+
+// <noShakespeare>
+// Exposing configuration as a single global settings object instead of mucking
+// up the global namespace with many variables.
+// </noShakespeare>
+window.lunametricsTracker = settings;
 
 })(jQuery);
 //fin
