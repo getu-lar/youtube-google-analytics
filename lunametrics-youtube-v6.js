@@ -28,54 +28,48 @@ tag.src = "//www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-//Then as a drop of rain we create two heavenly arrays
-//who may hold in thy endless bossom our value
-//necessary they may be not, but what is love
-//but the ample clevage of an array
-var videoArray = new Array();
-var playerArray = new Array();
-//And a third, new to Part 3
-//whereupon we now shall seek the title of our fair video
-//with thanks to Alex Moore @almoo
-//who is known by the Romanians
-var videoTitle = new Array();
-//and what is life without a magical switch
-//for true we show the true title of the player
-//unhindered by disguise or shadow
-//for false we leave it obscured by darkness
-//and the player id
-//so rings the clock
-//1 doth show the player title
-//2 doth show the player id
-//3 doth show both as concatenated by the hand of man
-var showTitle = 3;
-//and if you are not tracking
-//even with this code
-//try setting this line to 1
-//for with it we force the youtube beast
-//and reload the frames
-//which oft works
-var reloadFrames = 0;
-//And lo did Chris Green say
-//upon the blog comments
-//http://www.lunametrics.com/blog/2012/10/22/automatically-track-youtube-videos-events-google-analytics/
-//Why not a pause flag
-//one to prevent the terrors of the spammy
-//pause events when a visitor
-//doth drag the slide bar
-//cross't thy player
-//and all said huzzah
-//let us start by setting his flag to false
-//so that we know it is not true
-var pauseFlagArray = new Array();
 
 var settings = {
-	videoArray: videoArray,
-	playerArray: playerArray,
-	videoTitle: videoTitle,
-	showTitle: showTitle,
-	reloadFrames: reloadFrames,
-	pauseFlagArray: pauseFlagArray,
+	//Then as a drop of rain we create two heavenly arrays
+	//who may hold in thy endless bossom our value
+	//necessary they may be not, but what is love
+	//but the ample clevage of an array
+	videoArray: new Array(),
+	playerArray: new Array(),
+	//And a third, new to Part 3
+	//whereupon we now shall seek the title of our fair video
+	//with thanks to Alex Moore @almoo
+	//who is known by the Romanians
+	videoTitle: new Array(),
+	//and what is life without a magical switch
+	//for true we show the true title of the player
+	//unhindered by disguise or shadow
+	//for false we leave it obscured by darkness
+	//and the player id
+	//so rings the clock
+	//1 doth show the player title
+	//2 doth show the player id
+	//3 doth show both as concatenated by the hand of man
+	showTitle: 3,
+	//and if you are not tracking
+	//even with this code
+	//try setting this line to 1
+	//for with it we force the youtube beast
+	//and reload the frames
+	//which oft works
+	reloadFrames: 0,
+	//And lo did Chris Green say
+	//upon the blog comments
+	//http://www.lunametrics.com/blog/2012/10/22/automatically-track-youtube-videos-events-google-analytics/
+	//Why not a pause flag
+	//one to prevent the terrors of the spammy
+	//pause events when a visitor
+	//doth drag the slide bar
+	//cross't thy player
+	//and all said huzzah
+	//let us start by setting his flag to false
+	//so that we know it is not true
+	pauseFlagArray: new Array(),
 };
 
 //
@@ -169,7 +163,7 @@ function trackYouTube()
 			if(matches && matches.length > 1){
 				//we now place the beating heart of the youtube id
 				//in our first heavenly array
-				videoArray[i] = matches[1];
+				settings.videoArray[i] = matches[1];
 				//and then mark the vile iframe beast
 				//with the id of this video so that all
 				//may know it, and reference it
@@ -192,8 +186,8 @@ function trackYouTube()
 //as provided to by the wizard Alex Moore
 function getRealTitles(j) {
 	if(settings.showTitle==2){
-		playerArray[j] = new YT.Player(videoArray[j], {
-			videoId: videoArray[j],
+		settings.playerArray[j] = new YT.Player(settings.videoArray[j], {
+			videoId: settings.videoArray[j],
 			events: {
 				'onStateChange': onPlayerStateChange
 			}
@@ -202,17 +196,17 @@ function getRealTitles(j) {
 		//We pray into the ether
 		//harken oh monster of youtube
 		//tell us the truth of this noble video
-		var tempJSON = $.getJSON('http://gdata.youtube.com/feeds/api/videos/'+videoArray[j]+'?v=2&alt=json',function(data,status,xhr){
+		var tempJSON = $.getJSON('http://gdata.youtube.com/feeds/api/videos/'+settings.videoArray[j]+'?v=2&alt=json',function(data,status,xhr){
 			//and lo the monster repsonds
 			//it's whispers flowing as mist
 			//through the mountain crag
-			videoTitle[j] = data.entry.title.$t;
+			settings.videoTitle[j] = data.entry.title.$t;
 			//and we now knowning it's truth
 			//the truth of it's birth
 			//we annoit it and place it on it's throne
 			//as is provided by the documentation
-			playerArray[j] = new YT.Player(videoArray[j], {
-				videoId: videoArray[j],
+			settings.playerArray[j] = new YT.Player(settings.videoArray[j], {
+				videoId: settings.videoArray[j],
 				events: {
 					'onStateChange': onPlayerStateChange
 				}
@@ -275,11 +269,11 @@ function onPlayerStateChange(event) {
 	//which belies  this approach
 	//Tis a hack? A kludge?
 	//These are fighting words, sir!
-	for (j=0; j<videoArray.length; j++) {
+	for (j=0; j<settings.videoArray.length; j++) {
 		//tis the video a match?
-		if (videoArray[j]==videoID) {
+		if (settings.videoArray[j]==videoID) {
 			//apply the true title!
-			thisVideoTitle = videoTitle[j]||"";
+			thisVideoTitle = settings.videoTitle[j]||"";
 			//should we have a title, alas naught else
 			if(thisVideoTitle.length>0){
 				if(settings.showTitle==3){
@@ -295,7 +289,7 @@ function onPlayerStateChange(event) {
 				trackEvent('Videos', 'Play', thisVideoTitle);
 				//thy video plays
 				//reaffirm the pausal beast is not with us
-				pauseFlagArray[j] = false;
+				settings.pauseFlagArray[j] = false;
 			}
 			//should the video tire out and cease
 			if (event.data == YT.PlayerState.ENDED){
@@ -305,11 +299,11 @@ function onPlayerStateChange(event) {
 			//confirm the pause has but one head and it flies not its flag
 			//lo the pause event will spawn a many headed monster
 			//with events overflowing
-			if (event.data == YT.PlayerState.PAUSED && pauseFlagArray[j] != true){
+			if (event.data == YT.PlayerState.PAUSED && settings.pauseFlagArray[j] != true){
 				trackEvent('Videos', 'Pause', thisVideoTitle);
 				//tell the monster it may have
 				//but one head
-				pauseFlagArray[j] = true;
+				settings.pauseFlagArray[j] = true;
 			}
 			//and should the monster think, before it doth play
 			//after we command it to move
