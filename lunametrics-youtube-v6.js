@@ -70,20 +70,31 @@ var settings = {
 	//let us start by setting his flag to false
 	//so that we know it is not true
 	pauseFlagArray: new Array(),
+	// <noShakespeare>
+	// Automatically initialize video tracking on window load. Set this to false
+	// if you wish to explicitly only track certain videos.
+	// </noShakespeare>
+	autoInit: true,
 };
 
 //
 //And Then Lo We Tracked The Frames
 //with hounds ere the dark of knight
 //we sought them to blood our first array
-function trackYouTube()
+function trackYouTube(context)
 {
 	//What am i, but nothing?
 	var i = 0;
 	//Harken to the iframes of the page
 	//thy loathesome demon gallavanting upon
 	//our innocent sweet html
-	jQuery('iframe').each(function() {
+	context.filter('iframe').add('iframe', context).each(function() {
+		if ($(this).data('lunametrics-init') === true) {
+			// Already initialized -> skip to next
+			return true;
+		}
+		$(this).data('lunametrics-init', true);
+
 		//but what is this?
 		//an iframe! Avast!
 		if($(this).attr('src')){
@@ -225,7 +236,13 @@ function getRealTitles(j) {
 //should your other elements not comply and load quickly
 //forsooth they are the problem not i
 $(window).load(function() {
-	trackYouTube();
+	var e = $.Event('lunametrics-youtube-configure');
+	e.settings = settings;
+	$(document).trigger(e);
+
+	if (settings.autoInit) {
+		trackYouTube();
+	}
 });
 //Should one wish our monstrous video to play upon load
 //we could set that here. But for us. We shall let it
@@ -319,6 +336,14 @@ function onPlayerStateChange(event) {
 		}
 	}
 }
+
+// <noShakespeare>
+// Simple jQuery plugin wrapper to initialize youtube tracking on the given context element.
+// </noShakespeare>
+$.fn.trackYouTube = function() {
+	trackYouTube(this);
+	return this;
+};
 
 // <noShakespeare>
 // Exposing configuration as a single global settings object instead of mucking
