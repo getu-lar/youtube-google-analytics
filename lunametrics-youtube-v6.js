@@ -75,6 +75,15 @@ var settings = {
 	// if you wish to explicitly only track certain videos.
 	// </noShakespeare>
 	autoInit: true,
+	// <noShakespeare>
+	// Defines which method to use for tracking. Allowed values are 'auto' (prefers universal over classic
+	// if available), 'universal' (for universal tracking) and 'classic' (for classic tracking).
+	// </noShakespeare>
+	trackingMethod: 'auto',
+	// <noShakespeare>
+	// Set this to a specific universal analytics tracker name to track the youtube events there.
+	// </noShakespeare>
+	trackerName: null,
 };
 
 //
@@ -259,9 +268,10 @@ function onPlayerReady(event) {
 // universal analytics tracker.
 // </noShakespeare>
 function trackEvent (category, action, label) {
-	if (typeof window.ga === 'function') {
+	if (settings.trackingMethod === 'universal' || (settings.trackingMethod === 'auto' && typeof window.ga === 'function')) {
+		var tracker = (settings.trackerName === null ? '' : settings.trackerName + '.') + 'send';
 		ga('send', 'event', category, action, label);
-	} else {
+	} else if (settings.trackingMethod === 'classic' || settings.trackingMethod === 'auto') {
 		_gaq.push(['_trackEvent', category, action, label]);
 	}
 }
