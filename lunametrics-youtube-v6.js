@@ -47,9 +47,10 @@ var settings = {
 	//for false we leave it obscured by darkness
 	//and the player id
 	//so rings the clock
-	//1 doth show the player title
-	//2 doth show the player id
-	//3 doth show both as concatenated by the hand of man
+	//1 doth show the player title (0b001)
+	//2 doth show the player id (0b010)
+	//3 doth show both as concatenated by the hand of man (0b011)
+	//4 doth show the value of the iframe's "data-name" attribute (0b100)
 	showTitle: 3,
 	//and if you are not tracking
 	//even with this code
@@ -183,11 +184,21 @@ function trackYouTube(context)
 			if(matches && matches.length > 1){
 				//we now place the beating heart of the youtube id
 				//in our first heavenly array
-				settings.videoArray[i] = matches[1];
+				settings.videoArray[i] = { iFrame: $(this), videoID: matches[1], name: $(this).data('name') };
 				//and then mark the vile iframe beast
 				//with the id of this video so that all
 				//may know it, and reference it
 				video.attr('id', matches[1]);
+				//and we now knowning it's truth
+				//the truth of it's birth
+				//we annoit it and place it on it's throne
+				//as is provided by the documentation
+				settings.playerArray[i] = new YT.Player($(this).get(0), {
+					videoId: matches[1],
+					events: {
+						'onStateChange': onPlayerStateChange
+					}
+				});
 				//And Then Alex Moore came forth
 				//and said 'lo this ID is a jumble
 				//we should provide a more meaningful title
@@ -205,32 +216,16 @@ function trackYouTube(context)
 //rather than the gibberish jumble
 //as provided to by the wizard Alex Moore
 function getRealTitles(j) {
-	if(settings.showTitle==2){
-		settings.playerArray[j] = new YT.Player(settings.videoArray[j], {
-			videoId: settings.videoArray[j],
-			events: {
-				'onStateChange': onPlayerStateChange
-			}
-		});
-	}else{
+	if((settings.showTitle & 1) == 1){
 		//We pray into the ether
 		//harken oh monster of youtube
 		//tell us the truth of this noble video
-		var tempJSON = $.getJSON('http://gdata.youtube.com/feeds/api/videos/'+settings.videoArray[j]+'?v=2&alt=json',function(data,status,xhr){
+		var tempJSON = $.getJSON('http://gdata.youtube.com/feeds/api/videos/'+settings.videoArray[j].videoID+'?v=2&alt=json',function(data,status,xhr){
 			//and lo the monster repsonds
 			//it's whispers flowing as mist
 			//through the mountain crag
 			settings.videoTitle[j] = data.entry.title.$t;
-			//and we now knowning it's truth
-			//the truth of it's birth
-			//we annoit it and place it on it's throne
-			//as is provided by the documentation
-			settings.playerArray[j] = new YT.Player(settings.videoArray[j], {
-				videoId: settings.videoArray[j],
-				events: {
-					'onStateChange': onPlayerStateChange
-				}
-			});
+
 		});
 	}
 }
@@ -250,7 +245,7 @@ $(window).load(function() {
 	$(document).trigger(e);
 
 	if (settings.autoInit) {
-		trackYouTube();
+		trackYouTube($(document));
 	}
 });
 //Should one wish our monstrous video to play upon load
@@ -280,15 +275,16 @@ function trackEvent (category, action, label) {
 //we are ready to hold it's chains
 //and enslave it to our will.
 function onPlayerStateChange(event) {
+	var iFrame = event.target.getIframe();
 	//Let us accept the player which was massaged
 	//by the mousey hands of woman or man
 	var videoURL = event.target.getVideoUrl();
 	//We must strip from it, the true identity
 	var regex = /v=(.+)$/;
 	var matches = videoURL.match(regex);
-	videoID = matches[1];
+	var videoID = matches[1];
 	//and prepare for it's true title
-	thisVideoTitle = "";
+	var thisVideoTitle;
 	//we look through all the array
 	//which at first glance may seem unfocused
 	//but tis the off kilter response
@@ -298,19 +294,20 @@ function onPlayerStateChange(event) {
 	//These are fighting words, sir!
 	for (j=0; j<settings.videoArray.length; j++) {
 		//tis the video a match?
-		if (settings.videoArray[j]==videoID) {
+		if (settings.videoArray[j].iFrame.get(0) === iFrame) {
 			//apply the true title!
-			thisVideoTitle = settings.videoTitle[j]||"";
-			//should we have a title, alas naught else
-			if(thisVideoTitle.length>0){
-				if(settings.showTitle==3){
-					thisVideoTitle = thisVideoTitle + " | " + videoID;
-				}else if(settings.showTitle==2){
-					thisVideoTitle = videoID;
-				}
-			}else{
-				thisVideoTitle = videoID;
+			thisVideoTitle = [];
+			if ((settings.showTitle & 1) === 1 && settings.videoTitle[j]) {
+				thisVideoTitle.push(settings.videoTitle[j]);
 			}
+			if ((settings.showTitle & 2) === 2) {
+				thisVideoTitle.push(videoID);
+			}
+			if ((settings.showTitle & 4) === 4 && settings.videoArray[j].name) {
+				thisVideoTitle.push(settings.videoArray[j].name);
+			}
+			thisVideoTitle = thisVideoTitle.join(' | ');
+
 			//Should the video rear it's head
 			if (event.data == YT.PlayerState.PLAYING) {
 				trackEvent('Videos', 'Play', thisVideoTitle);
